@@ -106,7 +106,7 @@ class LectureProvider extends ChangeNotifier {
 
       final transcript = await _transcriptionService.transcribeAudio(
         lecture.audioPath,
-        onUploadProgress: (p) {
+        onProgress: (p) {
           _updateLecture(
               lecture.copyWith(status: LectureStatus.uploading, uploadProgress: p));
         },

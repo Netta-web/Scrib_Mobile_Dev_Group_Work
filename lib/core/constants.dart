@@ -1,28 +1,15 @@
 
 class AppConstants {
-  // ─── API Keys (provide using --dart-define at build/run time) ─────────────
-  // AssemblyAI — for transcription: https://www.assemblyai.com
-  static const String assemblyAiApiKey = String.fromEnvironment(
-    'ASSEMBLYAI_KEY',
-    defaultValue: '',
+  // Backend base URL. For Android emulator use 10.0.2.2 to reach host machine.
+  // Override with --dart-define=BACKEND_BASE_URL=http://<your-ip>:8787
+  static const String backendBaseUrl = String.fromEnvironment(
+    'BACKEND_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8787',
   );
 
-  // Anthropic — for AI note generation: https://console.anthropic.com
-  static const String anthropicApiKey = String.fromEnvironment(
-    'ANTHROPIC_KEY',
-    defaultValue: '',
-  );
-
-  // ─── AssemblyAI Endpoints ─────────────────────────────────────────────────
-  static const String assemblyUploadUrl =
-      'https://api.assemblyai.com/v2/upload';
-  static const String assemblyTranscriptUrl =
-      'https://api.assemblyai.com/v2/transcript';
-
-  // ─── Anthropic Endpoint ───────────────────────────────────────────────────
-  static const String anthropicMessagesUrl =
-      'https://api.anthropic.com/v1/messages';
-  static const String anthropicModel = 'claude-opus-4-5';
+    // ─── Backend Endpoints ────────────────────────────────────────────────────
+    static const String transcribeEndpoint = '$backendBaseUrl/api/transcribe';
+    static const String generateNotesEndpoint = '$backendBaseUrl/api/notes';
 
   // ─── App Strings ──────────────────────────────────────────────────────────
   static const String appName = 'Scrib';

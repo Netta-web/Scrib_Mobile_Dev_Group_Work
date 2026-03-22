@@ -1,16 +1,55 @@
-# scrib
+# Scrib
 
-A new Flutter project.
+Scrib records lectures, transcribes audio, and generates structured study notes.
 
-## Getting Started
+## Secure API Key Setup (Backend)
 
-This project is a starting point for a Flutter application.
+This project now uses a local backend proxy so API keys are not stored in the Flutter app.
 
-A few resources to get you started if this is your first Flutter project:
+### 1. Start backend
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Fill `backend/.env` with your real keys:
+
+```env
+PORT=8787
+ASSEMBLYAI_KEY=your_key_here
+ANTHROPIC_KEY=your_key_here
+```
+
+Run backend:
+
+```bash
+npm run dev
+```
+
+Health check:
+
+```bash
+http://localhost:8787/health
+```
+
+### 2. Run Flutter app
+
+Android emulator (default in app constants is `http://10.0.2.2:8787`):
+
+```bash
+flutter run -d emulator-5554
+```
+
+If you use a real phone or different backend host, override backend URL:
+
+```bash
+flutter run --dart-define=BACKEND_BASE_URL=http://<your-ip>:8787
+```
+
+## Why this is safer
+
+- Keys live in backend `.env`, not in git-tracked app code.
+- App only talks to your backend.
+- Backend talks to Anthropic/AssemblyAI using server-side secrets.
