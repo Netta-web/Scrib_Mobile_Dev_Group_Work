@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(48),
+                  preferredSize: const Size.fromHeight(56),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                     child: _SearchBar(
@@ -242,7 +242,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (_, i) => _LectureCard(lecture: filtered[i]),
+                      (context, i) {
+                        final lecture = filtered[i];
+                        return Dismissible(
+                          key: ValueKey(lecture.id),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.only(right: 24),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: ScribTheme.error,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.delete_outline_rounded,
+                                color: Colors.white, size: 26),
+                          ),
+                          onDismissed: (_) =>
+                              context.read<LectureProvider>().deleteLecture(lecture.id),
+                          child: _LectureCard(lecture: lecture),
+                        );
+                      },
                       childCount: filtered.length,
                     ),
                   ),
@@ -479,7 +499,9 @@ class _LectureCard extends StatelessWidget {
                   MaterialPageRoute(
                       builder: (_) => NotesScreen(lecture: lecture)),
                 )
-            : null,
+            : lecture.status == LectureStatus.failed
+                ? () => _showFailedDialog(context, lecture)
+                : null,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -567,10 +589,52 @@ class _LectureCard extends StatelessWidget {
               ),
               if (lecture.status == LectureStatus.completed)
                 const Icon(Icons.chevron_right,
-                    color: ScribTheme.textSecondary),
+                    color: ScribTheme.textSecondary)
+              else
+                GestureDetector(
+                  onTap: () => context
+                      .read<LectureProvider>()
+                      .deleteLecture(lecture.id),
+                  child: const Icon(Icons.delete_outline_rounded,
+                      color: ScribTheme.error, size: 20),
+                ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showFailedDialog(BuildContext context, Lecture lecture) {
+    final provider = context.read<LectureProvider>();
+    showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: ScribTheme.surface,
+        title: const Text('Processing Failed',
+            style: TextStyle(color: ScribTheme.onSurface)),
+        content: Text(
+          lecture.errorMessage ?? 'Unknown error',
+          style: const TextStyle(color: ScribTheme.textSecondary, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              provider.deleteLecture(lecture.id);
+            },
+            child: const Text('Delete',
+                style: TextStyle(color: ScribTheme.error)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              provider.retryLecture(lecture.id);
+            },
+            child: const Text('Retry',
+                style: TextStyle(color: ScribTheme.primary)),
+          ),
+        ],
       ),
     );
   }

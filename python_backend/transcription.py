@@ -47,6 +47,7 @@ class AssemblyAITranscriber:
                 auto_chapters=False,
                 sentiment_analysis=False,
                 auto_highlights=False,
+                speech_model=aai.SpeechModel.nano,
             )
             print("⏳ Processing audio...")
             transcript = self.transcriber.transcribe(audio_file, config)

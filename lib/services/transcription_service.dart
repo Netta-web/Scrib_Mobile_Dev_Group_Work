@@ -111,6 +111,18 @@ class TranscriptionService {
     onTranscriptionStatus?.call('completed');
 
     final decoded = jsonDecode(responseBody) as Map<String, dynamic>;
+
+    // New Python backend response: { success, payload: { transcript, ... } }
+    if (decoded.containsKey('payload')) {
+      final payload = decoded['payload'] as Map<String, dynamic>?;
+      final transcript = payload?['transcript'] as String?;
+      if (transcript == null || transcript.isEmpty) {
+        throw const TranscriptionException('Transcript is empty');
+      }
+      return transcript;
+    }
+
+    // Fallback for old response format
     final transcript = decoded['transcript'] as String?;
     if (transcript == null || transcript.isEmpty) {
       throw const TranscriptionException('Transcript is empty');

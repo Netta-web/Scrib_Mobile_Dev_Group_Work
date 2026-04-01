@@ -68,8 +68,9 @@ class LectureProvider extends ChangeNotifier {
     await _audioService.resumeRecording();
   }
 
-  /// Stops recording, creates the lecture object, and kicks off processing.
-  Future<void> stopRecordingAndProcess({
+  /// Stops recording, creates the lecture object, kicks off processing,
+  /// and returns the new lecture's id (or null if recording failed).
+  Future<String?> stopRecordingAndProcess({
     required String title,
     String? subject,
   }) async {
@@ -77,7 +78,7 @@ class LectureProvider extends ChangeNotifier {
     _isRecording = false;
     notifyListeners();
 
-    if (result == null) return;
+    if (result == null) return null;
 
     final lecture = Lecture(
       id: _uuid.v4(),
@@ -93,8 +94,10 @@ class LectureProvider extends ChangeNotifier {
     await _saveLectures();
     notifyListeners();
 
-    // Process in the background — UI will react to status changes
-    await _processLecture(lecture);
+    // Fire and forget — UI reacts to status changes via notifyListeners
+    _processLecture(lecture);
+
+    return lecture.id;
   }
 
   // ─── Processing pipeline ──────────────────────────────────────────────────
@@ -125,6 +128,7 @@ class LectureProvider extends ChangeNotifier {
 
       _updateLecture(lecture.copyWith(
         status: LectureStatus.completed,
+        transcript: transcript,
         notes: notes,
       ));
     } catch (e) {
@@ -142,6 +146,13 @@ class LectureProvider extends ChangeNotifier {
       _saveLectures();
       notifyListeners();
     }
+  }
+
+  Future<void> retryLecture(String id) async {
+    final idx = _lectures.indexWhere((l) => l.id == id);
+    if (idx == -1) return;
+    final lecture = _lectures[idx];
+    await _processLecture(lecture);
   }
 
   Future<void> deleteLecture(String id) async {

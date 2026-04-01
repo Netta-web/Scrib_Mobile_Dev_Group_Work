@@ -52,26 +52,31 @@ def health():
 # ── Transcription Endpoint ────────────────────────────────────────────────────
 
 @app.post("/api/transcribe")
-async def transcribe_file(file: UploadFile = File(...)):
+async def transcribe_file(audio: UploadFile = File(None), file: UploadFile = File(None)):
     """
     Upload an audio file → returns transcript + speaker segments.
     Flutter calls this first after recording a lecture.
+    Accepts field name 'audio' (Flutter) or 'file' (API docs/tests).
     """
-    filename = file.filename or "audio"
+    upload = audio or file
+    if upload is None:
+        raise HTTPException(status_code=400, detail="No audio file provided. Use field name 'audio' or 'file'.")
+
+    filename = upload.filename or "audio"
     _, ext = os.path.splitext(filename)
     if not ext:
         ext = ".m4a"
 
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=ext)
     try:
-        shutil.copyfileobj(file.file, tmp)
+        shutil.copyfileobj(upload.file, tmp)
         tmp.close()
 
         size = os.path.getsize(tmp.name)
         if size == 0:
             raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
-        print(f"📁 Received: {filename} ({size/1024/1024:.1f} MB)")
+        print(f"📁 Received: {filename} ({size/1024/1024:.2f} MB)")
 
         result = transcribe_audio(tmp.name)
 

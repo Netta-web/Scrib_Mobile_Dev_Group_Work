@@ -224,7 +224,7 @@ class _AuthScreenState extends State<AuthScreen>
     await Future.delayed(const Duration(milliseconds: 1800));
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('user_name', 'Google User');
+    await prefs.setString('user_name', 'Student');
     await prefs.setString('user_email', 'user@gmail.com');
     await prefs.setBool('is_logged_in', true);
 
